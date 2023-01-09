@@ -20,3 +20,14 @@ pub enum Color {
     Yellow = 14,
     White = 15,
 }
+
+/// Color combination of foreground and background.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(transparent)]
+struct ColorCode(u8); // https://en.wikipedia.org/wiki/VGA_text_mode
+
+impl ColorCode {
+    fn new(foreground: Color, background: Color) -> ColorCode {
+        ColorCode((background as u8) << 4 | (foreground as u8))
+    }
+}
