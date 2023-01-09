@@ -1,6 +1,8 @@
 #![no_std] // disable the standard library
 #![no_main] // disable all Rust-level entry points
 
+mod vga_buffer;
+
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     // this function is the entrypoint, since the linker looks for a function
