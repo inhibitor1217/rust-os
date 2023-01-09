@@ -1,3 +1,5 @@
+use volatile::Volatile;
+
 /// Colors available in VGA text mode.
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -40,7 +42,7 @@ struct TextCharacter {
 
 #[repr(transparent)]
 struct TextBuffer {
-    chars: [[TextCharacter; TextBuffer::WIDTH]; TextBuffer::HEIGHT],
+    chars: [[Volatile<TextCharacter>; TextBuffer::WIDTH]; TextBuffer::HEIGHT],
 }
 
 impl TextBuffer {
@@ -48,7 +50,7 @@ impl TextBuffer {
     const HEIGHT: usize = 25;
 
     fn set(&mut self, row: usize, col: usize, char: TextCharacter) {
-        self.chars[row][col] = char;
+        self.chars[row][col].write(char);
     }
 }
 
