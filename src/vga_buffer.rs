@@ -50,6 +50,10 @@ impl TextBuffer {
     const WIDTH: usize = 80;
     const HEIGHT: usize = 25;
 
+    fn get(&self, row: usize, col: usize) -> TextCharacter {
+        self.chars[row][col].read()
+    }
+
     fn set(&mut self, row: usize, col: usize, char: TextCharacter) {
         self.chars[row][col].write(char);
     }
@@ -103,7 +107,25 @@ impl Writer {
     }
 
     fn new_line(&mut self) {
-        todo!()
+        for row in 1..TextBuffer::HEIGHT {
+            for col in 0..TextBuffer::WIDTH {
+                let char = self.text_buffer.get(row, col);
+                self.text_buffer.set(row - 1, col, char);
+            }
+        }
+
+        self.clear_row(TextBuffer::HEIGHT - 1);
+        self.column_position = 0;
+    }
+
+    fn clear_row(&mut self, row: usize) {
+        let blank = TextCharacter {
+            ascii_character: b' ',
+            color_code: self.color_code,
+        };
+        for col in 0..TextBuffer::WIDTH {
+            self.text_buffer.set(row, col, blank);
+        }
     }
 }
 
@@ -122,8 +144,5 @@ pub fn print_foo() {
         text_buffer: unsafe { &mut *(0xb8000 as *mut TextBuffer) },
     };
 
-    writer.write_byte(b'H');
-    writer.write_string("ello ");
-    writer.write_string("Wörld!");
-    write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
+    write!(writer, "The numbers are {} and {}\nHello, world!!", 42, 1.0/3.0).unwrap();
 }
