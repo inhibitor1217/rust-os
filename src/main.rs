@@ -1,5 +1,6 @@
 #![no_std] // disable the standard library
 #![no_main] // disable all Rust-level entry points
+#![warn(clippy::all, clippy::pedantic)] // enable clippy lints
 
 use vga_buffer::print_foo;
 
