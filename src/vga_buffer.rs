@@ -1,4 +1,6 @@
-use core::fmt::{self, Write};
+use core::fmt;
+use lazy_static::lazy_static;
+use spin::Mutex;
 use volatile::Volatile;
 
 /// Colors available in VGA text mode.
@@ -136,13 +138,11 @@ impl fmt::Write for Writer {
     }
 }
 
-/// temporary
-pub fn print_foo() {
-    let mut writer = Writer {
+lazy_static! {
+    // use spin lock to synchronize WRITER
+    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
         color_code: ColorCode::new(Color::Yellow, Color::Black),
-        text_buffer: unsafe { &mut *(0xb8000 as *mut TextBuffer) },
-    };
-
-    write!(writer, "The numbers are {} and {}\nHello, world!!", 42, 1.0/3.0).unwrap();
+        text_buffer: unsafe { &mut *(0xb8000 as *mut TextBuffer) }
+    });
 }
