@@ -18,12 +18,14 @@ pub fn _print(args: fmt::Arguments) {
 }
 
 /// Prints to the host through the serial interface.
+#[allow(clippy::module_name_repetitions)]
 #[macro_export]
 macro_rules! serial_print {
   ($($arg:tt)*) => ($crate::serial::_print(format_args!($($arg)*)));
 }
 
 /// Prints to the host through the serial interface, appending a newline.
+#[allow(clippy::module_name_repetitions)]
 #[macro_export]
 macro_rules! serial_println {
   () => ($crate::serial_print!("\n"));
