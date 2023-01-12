@@ -1,6 +1,9 @@
 #![no_std] // disable the standard library
 #![no_main] // disable all Rust-level entry points
 #![warn(clippy::all, clippy::pedantic)] // enable clippy lints
+#![feature(custom_test_frameworks)] // enable testing with #[no_std] context
+#![test_runner(crate::test_runner)] // define custom test framework runner
+#![reexport_test_harness_main = "test_main"] // rename the test entry function to `test_main`
 
 mod vga_buffer;
 
@@ -9,7 +12,8 @@ pub extern "C" fn _start() -> ! {
     // this function is the entrypoint, since the linker looks for a function
     // named `_start` by default
     
-    println!("Hello, world!");
+    #[cfg(test)]
+    test_main();
 
     loop {}
 }
@@ -19,4 +23,19 @@ pub extern "C" fn _start() -> ! {
 fn panic(info: &core::panic::PanicInfo) -> ! {
     println!("{info}");
     loop {}
+}
+
+#[cfg(test)]
+fn test_runner(tests: &[&dyn Fn()]) {
+    println!("Running {} tests", tests.len());
+    for test in tests {
+        test();
+    }
+}
+
+#[test_case]
+fn trivial_assertion() {
+    print!("it is not broken... ");
+    assert_eq!(1, 1);
+    println!("[ok]");
 }
