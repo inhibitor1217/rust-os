@@ -20,9 +20,20 @@ pub extern "C" fn _start() -> ! {
 }
 
 /// This function is called on panic.
+#[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
     println!("{info}");
+    loop {}
+}
+
+/// Panic handler in test mode.
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &core::panic::PanicInfo) -> ! {
+    serial_println!("[failed]\n");
+    serial_println!("Error: {info}\n");
+    exit_qemu(QemuExitCode::Failed);
     loop {}
 }
 
@@ -54,6 +65,6 @@ fn test_runner(tests: &[&dyn Fn()]) {
 #[test_case]
 fn trivial_assertion() {
     serial_print!("it is not broken... ");
-    assert_eq!(1, 1);
+    assert_eq!(0, 1);
     serial_println!("[ok]");
 }
