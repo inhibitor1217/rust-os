@@ -163,3 +163,15 @@ pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
     WRITER.lock().write_fmt(args).unwrap();
 }
+
+#[test_case]
+fn println_str() {
+    println!("Hello, world!");
+}
+
+#[test_case]
+fn println_many() {
+    for _ in 0..200 {
+        println!("Hello, world!");
+    }
+}
