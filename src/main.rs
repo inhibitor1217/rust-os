@@ -9,9 +9,7 @@ pub extern "C" fn _start() -> ! {
     // this function is the entrypoint, since the linker looks for a function
     // named `_start` by default
     
-    use core::fmt::Write;
-
-    write!(vga_buffer::WRITER.lock(), "Hello, world!").unwrap();
+    println!("Hello, world!");
 
     loop {}
 }
