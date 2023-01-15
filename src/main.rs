@@ -9,7 +9,9 @@
 pub extern "C" fn _start() -> ! {
     // this function is the entrypoint, since the linker looks for a function
     // named `_start` by default
-    
+
+    rust_os::init();
+
     #[cfg(test)]
     test_main();
 
@@ -22,7 +24,7 @@ pub extern "C" fn _start() -> ! {
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
     rust_os::println!("{info}");
-    
+
     #[allow(clippy::empty_loop)]
     loop {}
 }
