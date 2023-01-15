@@ -7,8 +7,9 @@
 
 pub mod qemu;
 pub mod serial;
-pub mod test;
 pub mod vga_buffer;
+
+mod test;
 
 pub fn test_runner(tests: &[&dyn test::Testable]) {
     serial_println!("Running {} tests", tests.len());
