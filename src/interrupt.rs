@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use pic8259::ChainedPics;
 use spin::Mutex;
-use x86_64::{structures::idt::{InterruptDescriptorTable, InterruptStackFrame}};
+use x86_64::{structures::idt::{InterruptDescriptorTable, InterruptStackFrame}, instructions};
 
 use crate::{gdt, println};
 
@@ -40,6 +40,10 @@ static PICS: Mutex<ChainedPics> = Mutex::new(unsafe { ChainedPics::new(PIC_1_OFF
 
 pub fn init_pic() {
     unsafe { PICS.lock().initialize(); }
+}
+
+pub fn enable_interrupts() {
+    instructions::interrupts::enable();
 }
 
 #[test_case]

@@ -18,6 +18,7 @@ pub fn init() {
     gdt::init();
     interrupt::init_idt();
     interrupt::init_pic();
+    interrupt::enable_interrupts();
 }
 
 pub fn test_runner(tests: &[&dyn test::Testable]) {
