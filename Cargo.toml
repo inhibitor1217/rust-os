@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 bootloader = "0.9.23"           # ^0.10 seems not compatible with current structure
+pic8259 = "0.10.2"
 spin = "0.9.4"
 uart_16550 = "0.2.18"
 volatile = "0.2.7"
