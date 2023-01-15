@@ -23,7 +23,7 @@ extern "x86-interrupt" fn test_double_fault_handler(
     _error_code: u64,
 ) -> ! {
     serial_println!("[ok]");
-    qemu::exit(qemu::ExitCode::Success);
+    qemu::exit(qemu::ExitCode::Success)
 }
 
 fn init_test_idt() {
