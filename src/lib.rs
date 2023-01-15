@@ -5,11 +5,10 @@
 #![test_runner(crate::test_runner)] // define custom test framework runner
 #![reexport_test_harness_main = "test_main"] // rename the test entry function to `test_main`
 
+pub mod qemu;
 pub mod serial;
+pub mod test;
 pub mod vga_buffer;
-
-mod qemu;
-mod test;
 
 pub fn test_runner(tests: &[&dyn test::Testable]) {
     serial_println!("Running {} tests", tests.len());
@@ -20,9 +19,9 @@ pub fn test_runner(tests: &[&dyn test::Testable]) {
 }
 
 pub fn test_panic_handler(info: &core::panic::PanicInfo) -> ! {
-  serial_println!("[failed]\n");
-  serial_println!("Error: {info}\n");
-  qemu::exit(qemu::ExitCode::Failed);
+    serial_println!("[failed]\n");
+    serial_println!("Error: {info}\n");
+    qemu::exit(qemu::ExitCode::Failed);
 }
 
 /// Entry point for `cargo test`
