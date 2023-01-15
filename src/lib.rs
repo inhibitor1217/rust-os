@@ -6,6 +6,7 @@
 #![test_runner(crate::test_runner)] // define custom test framework runner
 #![reexport_test_harness_main = "test_main"] // rename the test entry function to `test_main`
 
+pub mod gdt;
 pub mod interrupt;
 pub mod qemu;
 pub mod serial;
@@ -14,6 +15,7 @@ pub mod vga_buffer;
 mod test;
 
 pub fn init() {
+    gdt::init();
     interrupt::init_idt();
 }
 
