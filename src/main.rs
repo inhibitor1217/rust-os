@@ -15,8 +15,7 @@ pub extern "C" fn _start() -> ! {
     #[cfg(test)]
     test_main();
 
-    #[allow(clippy::empty_loop)]
-    loop {}
+    rust_os::halt();
 }
 
 /// This function is called on panic.
@@ -25,8 +24,7 @@ pub extern "C" fn _start() -> ! {
 fn panic(info: &core::panic::PanicInfo) -> ! {
     rust_os::println!("{info}");
 
-    #[allow(clippy::empty_loop)]
-    loop {}
+    rust_os::halt();
 }
 
 /// Panic handler in test mode.

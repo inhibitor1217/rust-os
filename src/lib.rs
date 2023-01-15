@@ -21,6 +21,12 @@ pub fn init() {
     interrupt::enable_interrupts();
 }
 
+pub fn halt() -> ! {
+    loop {
+        x86_64::instructions::hlt();
+    }
+}
+
 pub fn test_runner(tests: &[&dyn test::Testable]) {
     serial_println!("Running {} tests", tests.len());
     for test in tests {
@@ -41,7 +47,7 @@ pub fn test_panic_handler(info: &core::panic::PanicInfo) -> ! {
 pub extern "C" fn _start() -> ! {
     init();
     test_main();
-    loop {}
+    halt();
 }
 
 #[cfg(test)]
