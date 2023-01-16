@@ -8,6 +8,7 @@
 
 pub mod gdt;
 pub mod interrupt;
+pub mod memory;
 pub mod qemu;
 pub mod serial;
 pub mod vga_buffer;
