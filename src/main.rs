@@ -5,11 +5,9 @@
 #![test_runner(rust_os::test_runner)] // define custom test framework runner
 #![reexport_test_harness_main = "test_main"] // rename the test entry function to `test_main`
 
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
-    // this function is the entrypoint, since the linker looks for a function
-    // named `_start` by default
+bootloader::entry_point!(kernel_main);
 
+fn kernel_main(_boot_info: &'static bootloader::BootInfo) -> ! {
     rust_os::init();
 
     #[cfg(test)]
