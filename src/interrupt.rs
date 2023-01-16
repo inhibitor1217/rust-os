@@ -1,13 +1,14 @@
 use lazy_static::lazy_static;
-use pc_keyboard::{layouts::Us104Key, HandleControl, Keyboard, ScancodeSet1, DecodedKey};
+use pc_keyboard::{layouts::Us104Key, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
 use pic8259::ChainedPics;
 use spin::Mutex;
 use x86_64::{
     instructions::{self, port::Port},
-    structures::idt::{InterruptDescriptorTable, InterruptStackFrame},
+    registers::control::Cr2,
+    structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode},
 };
 
-use crate::{gdt, print, println};
+use crate::{gdt, print, println, halt};
 
 const PIC_1_OFFSET: u8 = 0x20; // Primary Interrupt Controller: Interrupt vectors from 0x20 to 0x27
 const PIC_2_OFFSET: u8 = 0x28; // Secondary Interrupt Controller: Interrupt vectors from 0x28 to 0x2f
@@ -31,6 +32,7 @@ lazy_static! {
                 .set_handler_fn(double_fault_handler)
                 .set_stack_index(gdt::DOUBLE_FAULT_IST_INDEX);
         }
+        idt.page_fault.set_handler_fn(page_fault_handler);
         idt[InterruptIndex::Timer as usize].set_handler_fn(timer_interrupt_handler);
         idt[InterruptIndex::Keyboard as usize].set_handler_fn(keyboard_interrupt_handler);
         idt
@@ -54,6 +56,18 @@ extern "x86-interrupt" fn double_fault_handler(
     panic!("EXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
 }
 
+extern "x86-interrupt" fn page_fault_handler(
+    stack_frame: InterruptStackFrame,
+    error_code: PageFaultErrorCode,
+) {
+    println!("EXCEPTION: PAGE FAULT");
+    println!("Accessed Address: {:?}", Cr2::read());
+    println!("Error Code: {:?}", error_code);
+    println!("{:#?}", stack_frame);
+
+    halt();
+}
+
 extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFrame) {
     print!(".");
     unsafe {
@@ -65,7 +79,7 @@ extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFr
 extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStackFrame) {
     let mut port = Port::new(0x60); // I/O port of PS/2 controller
     let scancode: u8 = unsafe { port.read() };
-    
+
     let mut keyboard = KEYBOARD.lock();
     if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
         if let Some(key) = keyboard.process_keyevent(key_event) {
