@@ -5,8 +5,8 @@
 #![test_runner(rust_os::test_runner)] // define custom test framework runner
 #![reexport_test_harness_main = "test_main"] // rename the test entry function to `test_main`
 
-use rust_os::{memory, println};
-use x86_64::{VirtAddr, structures::paging::Translate};
+use rust_os::memory::{self, BootInfoFrameAllocator};
+use x86_64::{structures::paging::Page, VirtAddr};
 
 bootloader::entry_point!(kernel_main);
 
@@ -14,20 +14,14 @@ fn kernel_main(boot_info: &'static bootloader::BootInfo) -> ! {
     rust_os::init();
 
     let physical_memory_offset = VirtAddr::new(boot_info.physical_memory_offset);
-    let mapper = unsafe { memory::init(physical_memory_offset) };
+    let mut mapper = unsafe { memory::init(physical_memory_offset) };
+    let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
 
-    let addresses = [
-        0xb8000,
-        0x201008,
-        0x0100_0020_1a10,
-        boot_info.physical_memory_offset,
-    ];
+    let page = Page::containing_address(VirtAddr::new(0xdeadbeef000));
+    memory::create_example_mapping(page, &mut mapper, &mut frame_allocator);
 
-    for &address in &addresses {
-        let virt = VirtAddr::new(address);
-        let phys = mapper.translate_addr(virt);
-        println!("{virt:?} -> {phys:?}");
-    }
+    let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
+    unsafe { page_ptr.offset(400).write_volatile(0x_f021_f077_f065_f04e) };
 
     #[cfg(test)]
     test_main();
