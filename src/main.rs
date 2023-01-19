@@ -7,8 +7,10 @@
 
 extern crate alloc;
 
-use alloc::boxed::Box;
-use rust_os::memory::{self, BootInfoFrameAllocator};
+use rust_os::{
+    allocator,
+    memory::{self, BootInfoFrameAllocator},
+};
 use x86_64::VirtAddr;
 
 bootloader::entry_point!(kernel_main);
@@ -19,8 +21,8 @@ fn kernel_main(boot_info: &'static bootloader::BootInfo) -> ! {
     let physical_memory_offset = VirtAddr::new(boot_info.physical_memory_offset);
     let mut mapper = unsafe { memory::init(physical_memory_offset) };
     let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
-
-    let x = Box::new(42);
+    allocator::init_kernel_heap(&mut mapper, &mut frame_allocator)
+        .expect("heap initialization failed");
 
     #[cfg(test)]
     test_main();
