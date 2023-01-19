@@ -5,8 +5,8 @@
 #![test_runner(rust_os::test_runner)] // define custom test framework runner
 #![reexport_test_harness_main = "test_main"] // rename the test entry function to `test_main`
 
-use rust_os::{memory::{translate_addr}, println};
-use x86_64::VirtAddr;
+use rust_os::{memory, println};
+use x86_64::{VirtAddr, structures::paging::Translate};
 
 bootloader::entry_point!(kernel_main);
 
@@ -14,6 +14,7 @@ fn kernel_main(boot_info: &'static bootloader::BootInfo) -> ! {
     rust_os::init();
 
     let physical_memory_offset = VirtAddr::new(boot_info.physical_memory_offset);
+    let mapper = unsafe { memory::init(physical_memory_offset) };
 
     let addresses = [
         0xb8000,
@@ -24,7 +25,7 @@ fn kernel_main(boot_info: &'static bootloader::BootInfo) -> ! {
 
     for &address in &addresses {
         let virt = VirtAddr::new(address);
-        let phys = unsafe { translate_addr(virt, physical_memory_offset) };
+        let phys = mapper.translate_addr(virt);
         println!("{virt:?} -> {phys:?}");
     }
 
