@@ -1,12 +1,13 @@
 use core::{alloc::GlobalAlloc, ptr::null_mut};
 
-use linked_list_allocator::LockedHeap;
 use x86_64::{
     structures::paging::{
         mapper::MapToError, FrameAllocator, Mapper, Page, PageTableFlags, Size4KiB,
     },
     VirtAddr,
 };
+
+pub mod bump;
 
 pub struct Stub;
 
@@ -20,12 +21,34 @@ unsafe impl GlobalAlloc for Stub {
     }
 }
 
+pub struct Locked<A> {
+    inner: spin::Mutex<A>,
+}
+
+impl<A> Locked<A> {
+    pub const fn new(inner: A) -> Self {
+        Locked {
+            inner: spin::Mutex::new(inner),
+        }
+    }
+
+    pub fn lock(&self) -> spin::MutexGuard<A> {
+        self.inner.lock()
+    }
+}
+
 pub const KERNEL_HEAP_START: u64 = 0x_4444_4444_0000; // An arbitrary value
 pub const KERNEL_HEAP_SIZE: usize = 100 * 1024; // 100 KiB
 
 #[global_allocator]
-static ALLOCATOR: LockedHeap = LockedHeap::empty();
+static ALLOCATOR: Locked<bump::Allocator> = Locked::new(bump::Allocator::new());
 
+/// Initializes the kernel heap memory.
+/// 
+/// # Errors
+/// The initialization might fail if the frame allocator fails
+/// to allocate enough physical memory frames for kernel heap memory
+/// or the page tables for virtual memory mappings.
 pub fn init_kernel_heap(
     mapper: &mut impl Mapper<Size4KiB>,
     frame_allocator: &mut impl FrameAllocator<Size4KiB>,
@@ -50,8 +73,16 @@ pub fn init_kernel_heap(
     }
 
     unsafe {
-        ALLOCATOR.lock().init(KERNEL_HEAP_START as *mut u8, KERNEL_HEAP_SIZE);
+        ALLOCATOR
+            .lock()
+            .init(KERNEL_HEAP_START, KERNEL_HEAP_SIZE);
     }
 
     Ok(())
+}
+
+/// Align the given address `addr` upwards to alignment `align`.
+fn align_up(addr: u64, align: usize) -> u64 {
+    let align = align as u64;
+    (addr + align - 1) & !(align - 1)
 }

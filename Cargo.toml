@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 bootloader = { version = "0.9.23", features = ["map_physical_memory"] }           # ^0.10 seems not compatible with current structure
-linked_list_allocator = "0.10.4"
 pc-keyboard = "0.6.1"
 pic8259 = "0.10.2"
 spin = "0.9.4"
