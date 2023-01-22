@@ -26,9 +26,9 @@ impl Allocator {
     /// # Safety
     /// This method is unsafe because the caller must ensure that the given
     /// memory range is unused. Also, this method must be called only once.
-    pub unsafe fn init(&mut self, heap_start: u64, heap_size: usize) {
+    pub unsafe fn init(&mut self, heap_start: u64, heap_size: u64) {
         self.heap_start = heap_start;
-        self.heap_end = heap_start + heap_size as u64;
+        self.heap_end = heap_start + heap_size;
         self.next = heap_start;
     }
 }
@@ -37,10 +37,9 @@ unsafe impl GlobalAlloc for Locked<Allocator> {
     unsafe fn alloc(&self, layout: core::alloc::Layout) -> *mut u8 {
         let mut bump = self.lock();
 
-        let alloc_start = align_up(bump.next, layout.align());
-        let alloc_end = match alloc_start.checked_add(layout.size() as u64) {
-            Some(end) => end,
-            None => return core::ptr::null_mut(),
+        let alloc_start = align_up(bump.next, layout.align() as u64);
+        let Some(alloc_end) = alloc_start.checked_add(layout.size() as u64) else {
+            return core::ptr::null_mut();
         };
 
         if alloc_end > bump.heap_end {

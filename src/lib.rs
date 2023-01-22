@@ -3,6 +3,7 @@
 #![warn(clippy::all, clippy::pedantic)] // enable clippy lints
 #![feature(abi_x86_interrupt)] // enable x86-interrupt ABI
 #![feature(alloc_error_handler)] // enable handling allocation failure
+#![feature(const_mut_refs)] // enable allowing mutable references in const fn
 #![feature(custom_test_frameworks)] // enable testing with #[no_std] context
 #![test_runner(crate::test_runner)] // define custom test framework runner
 #![reexport_test_harness_main = "test_main"] // rename the test entry function to `test_main`

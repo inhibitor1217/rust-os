@@ -8,6 +8,7 @@ use x86_64::{
 };
 
 pub mod bump;
+pub mod linked_list;
 
 pub struct Stub;
 
@@ -38,10 +39,10 @@ impl<A> Locked<A> {
 }
 
 pub const KERNEL_HEAP_START: u64 = 0x_4444_4444_0000; // An arbitrary value
-pub const KERNEL_HEAP_SIZE: usize = 100 * 1024; // 100 KiB
+pub const KERNEL_HEAP_SIZE: u64 = 100 * 1024; // 100 KiB
 
 #[global_allocator]
-static ALLOCATOR: Locked<bump::Allocator> = Locked::new(bump::Allocator::new());
+static ALLOCATOR: Locked<linked_list::Allocator> = Locked::new(linked_list::Allocator::new());
 
 /// Initializes the kernel heap memory.
 /// 
@@ -82,7 +83,6 @@ pub fn init_kernel_heap(
 }
 
 /// Align the given address `addr` upwards to alignment `align`.
-fn align_up(addr: u64, align: usize) -> u64 {
-    let align = align as u64;
+fn align_up(addr: u64, align: u64) -> u64 {
     (addr + align - 1) & !(align - 1)
 }
