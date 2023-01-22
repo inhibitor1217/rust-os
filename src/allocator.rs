@@ -8,6 +8,7 @@ use x86_64::{
 };
 
 pub mod bump;
+pub mod fixed_size_block;
 pub mod linked_list;
 
 pub struct Stub;
@@ -42,7 +43,7 @@ pub const KERNEL_HEAP_START: u64 = 0x_4444_4444_0000; // An arbitrary value
 pub const KERNEL_HEAP_SIZE: u64 = 100 * 1024; // 100 KiB
 
 #[global_allocator]
-static ALLOCATOR: Locked<linked_list::Allocator> = Locked::new(linked_list::Allocator::new());
+static ALLOCATOR: Locked<fixed_size_block::Allocator> = Locked::new(fixed_size_block::Allocator::new());
 
 /// Initializes the kernel heap memory.
 /// 

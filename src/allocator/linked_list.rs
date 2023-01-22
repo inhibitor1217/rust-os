@@ -136,6 +136,6 @@ unsafe impl GlobalAlloc for Locked<Allocator> {
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: core::alloc::Layout) {
         let (size, _) = Allocator::size_align(layout);
-        self.lock().add_free_region(ptr as u64, size)
+        self.lock().add_free_region(ptr as u64, size);
     }
 }
