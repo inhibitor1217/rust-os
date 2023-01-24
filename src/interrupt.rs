@@ -1,5 +1,5 @@
 use lazy_static::lazy_static;
-use pc_keyboard::{layouts::Us104Key, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
+use pc_keyboard::{layouts::Us104Key, HandleControl, Keyboard, ScancodeSet1};
 use pic8259::ChainedPics;
 use spin::Mutex;
 use x86_64::{
@@ -8,7 +8,7 @@ use x86_64::{
     structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode},
 };
 
-use crate::{gdt, print, println, halt};
+use crate::{gdt, halt, println, task};
 
 const PIC_1_OFFSET: u8 = 0x20; // Primary Interrupt Controller: Interrupt vectors from 0x20 to 0x27
 const PIC_2_OFFSET: u8 = 0x28; // Secondary Interrupt Controller: Interrupt vectors from 0x28 to 0x2f
@@ -79,15 +79,7 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStac
     let mut port = Port::new(0x60); // I/O port of PS/2 controller
     let scancode: u8 = unsafe { port.read() };
 
-    let mut keyboard = KEYBOARD.lock();
-    if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
-        if let Some(key) = keyboard.process_keyevent(key_event) {
-            match key {
-                DecodedKey::Unicode(char) => print!("{char}"),
-                DecodedKey::RawKey(key) => print!("{key:?}"),
-            }
-        }
-    }
+    task::keyboard::add_scancode(scancode);
 
     unsafe {
         PICS.lock()

@@ -6,6 +6,7 @@ use core::{
 
 use alloc::boxed::Box;
 
+pub mod keyboard;
 pub mod simple_executor;
 
 pub struct Task {

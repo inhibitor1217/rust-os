@@ -10,8 +10,7 @@ extern crate alloc;
 use rust_os::{
     allocator,
     memory::{self, BootInfoFrameAllocator},
-    println,
-    task::{simple_executor::SimpleExecutor, Task},
+    task::{keyboard, simple_executor::SimpleExecutor, Task},
 };
 use x86_64::VirtAddr;
 
@@ -27,7 +26,7 @@ fn kernel_main(boot_info: &'static bootloader::BootInfo) -> ! {
         .expect("heap initialization failed");
 
     let mut executor = SimpleExecutor::new();
-    executor.spawn(Task::new(task()));
+    executor.spawn(Task::new(keyboard::print_keypress()));
     executor.run();
 
     #[cfg(test)]
@@ -50,13 +49,4 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
     rust_os::test_panic_handler(info);
-}
-
-async fn number() -> u32 {
-    42
-}
-
-async fn task() {
-    let number = number().await;
-    println!("number = {number}");
 }
