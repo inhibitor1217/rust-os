@@ -10,7 +10,7 @@ extern crate alloc;
 use rust_os::{
     allocator,
     memory::{self, BootInfoFrameAllocator},
-    task::{keyboard, simple_executor::SimpleExecutor, Task},
+    task::{executor::Executor, keyboard, Task},
 };
 use x86_64::VirtAddr;
 
@@ -25,14 +25,14 @@ fn kernel_main(boot_info: &'static bootloader::BootInfo) -> ! {
     allocator::init_kernel_heap(&mut mapper, &mut frame_allocator)
         .expect("heap initialization failed");
 
-    let mut executor = SimpleExecutor::new();
+    let mut executor = Executor::new();
     executor.spawn(Task::new(keyboard::print_keypress()));
-    executor.run();
-
     #[cfg(test)]
-    test_main();
+    executor.spawn(Task::new(async {
+        test_main();
+    }));
 
-    rust_os::halt();
+    executor.run();
 }
 
 /// This function is called on panic.
