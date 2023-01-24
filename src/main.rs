@@ -10,6 +10,8 @@ extern crate alloc;
 use rust_os::{
     allocator,
     memory::{self, BootInfoFrameAllocator},
+    println,
+    task::{simple_executor::SimpleExecutor, Task},
 };
 use x86_64::VirtAddr;
 
@@ -23,6 +25,10 @@ fn kernel_main(boot_info: &'static bootloader::BootInfo) -> ! {
     let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
     allocator::init_kernel_heap(&mut mapper, &mut frame_allocator)
         .expect("heap initialization failed");
+
+    let mut executor = SimpleExecutor::new();
+    executor.spawn(Task::new(task()));
+    executor.run();
 
     #[cfg(test)]
     test_main();
@@ -44,4 +50,13 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
     rust_os::test_panic_handler(info);
+}
+
+async fn number() -> u32 {
+    42
+}
+
+async fn task() {
+    let number = number().await;
+    println!("number = {number}");
 }

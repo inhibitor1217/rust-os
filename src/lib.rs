@@ -16,6 +16,7 @@ pub mod interrupt;
 pub mod memory;
 pub mod qemu;
 pub mod serial;
+pub mod task;
 pub mod vga_buffer;
 
 mod test;
